@@ -1,0 +1,6 @@
+[submodule "MicroPython_SCD4X"]
+	path = MicroPython_SCD4X
+	url = https://github.com/peter-l5/MicroPython_SCD4X
+[submodule "SCD4x"]
+	path = SCD4x
+	url = https://github.com/octaprog7/SCD4x
