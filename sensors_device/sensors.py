@@ -5,10 +5,28 @@ import time
 
 from machine import I2C, Pin
 
+import requests
 import scd4x
 
+from secrets import API_KEY
+from wifi import wifi_init
 
-def main():
+
+API_URL = 'http://192.168.5.100:8000/sensors'
+PING_URL = 'http://192.168.5.100:8000/ping'
+
+headers_get = {
+    'X-API-Key': API_KEY
+}
+
+headers_post = {
+    'Accept:': 'application/json',
+    'Content-Type': 'application/json',
+    'X-API-Key': API_KEY
+}
+
+
+def setup_and_test_sensors():
     # I2C sensors setup
     i2c = I2C(id=0, scl=Pin(9), sda=Pin(8), freq=100000)  # on Arduino Nano RP2040 Connect tested
     scd = scd4x.SCD4X(i2c)
@@ -38,7 +56,22 @@ def main():
     ds1820_addr = ow_scan_result[0]
     ds.convert_temp()
 
+    return scd, ds, ds1820_addr, dht_sensor, led
+
+
+def main():
+    wifi_init()
+
+    r = requests.get(PING_URL, headers=headers_get)
+    print(f"HTTP conn status code: {r.status_code}")
+    print(f"HTTP conn response: {r.json()}")
+    r.close()
+
+    scd, ds, ds1820_addr, dht_sensor, led = setup_and_test_sensors()
+
     while True:
+        led.on()
+
         dht_temp = None
         dht_humidity = None
         ow_temp = None
@@ -61,18 +94,51 @@ def main():
         dht_humidity = dht_sensor.humidity()
         dht_temp = dht_sensor.temperature()
 
-        print("###############################")
-        print(f"DS1820 Temperature:\t{ow_temp}")
-        print(f"DHT22 Temperature:\t{dht_temp}")
-        print(f"SCD41 Temperature:\t{scd_temp}")
-        print("---")
-        print(f"DHT22 humidity:\t{dht_humidity}")
-        print(f"SCD41 humidity:\t{scd_humidity}")
-        print("---")
-        print(f"CO2 ppm level:\t\t{scd_co2_ppm_level}")
-        led.toggle()
+        data = [
+            {
+                "regname": "ow_temp",
+                "value": str(ow_temp),
+                "dt": "2025-01-09T11:22:33"
+            },
+            {
+                "regname": "dht_temp",
+                "value": str(dht_temp),
+                "dt": "2025-01-09T11:22:33"
+            },
+            {
+                "regname": "scd_temp",
+                "value": str(scd_temp),
+                "dt": "2025-01-09T11:22:33"
+            },
+            {
+                "regname": "dht_humidity",
+                "value": str(dht_humidity),
+                "dt": "2025-01-09T11:22:33"
+            },
+            {
+                "regname": "scd_humidity",
+                "value": str(scd_humidity),
+                "dt": "2025-01-09T11:22:33"
+            },
+            {
+                "regname": "scd_co2_ppm_level",
+                "value": str(scd_co2_ppm_level),
+                "dt": "2025-01-09T11:22:33"
+            }
+        ]
 
-        time.sleep(15)
+        for i in data:
+            print(i)
+        try:
+            r = requests.post(API_URL, headers=headers_post, json=data, timeout=5)
+            print(f"POST status code: {r.status_code}")
+            r.close()
+        except OSError as e:
+            print(f"POST failure: {str(e)}")
+
+        led.off()
+
+        time.sleep(20)
 
 
 if __name__ == "__main__":
