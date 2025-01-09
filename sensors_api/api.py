@@ -6,6 +6,7 @@ import logging
 
 from datetime import datetime
 from typing import List, Optional
+from pprint import pformat
 
 import uvicorn
 
@@ -19,6 +20,7 @@ from pydantic import field_validator
 ALL_GOOD = {"message": "OK."}
 DB_FILE_NAME = 'sensors.sqlite'
 X_API_KEY = config('X_API_KEY')
+MAX_ITEMS_TO_GET = 6
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -51,15 +53,19 @@ app = FastAPI()
 
 
 @app.post("/sensors")
-def add_data(data: SensorsData, session: Session = Depends(get_session), api_key: str = Depends(header_scheme)):
+def add_data(data: List[SensorsData],
+             session: Session = Depends(get_session),
+             api_key: str = Depends(header_scheme)):
+
     if api_key != X_API_KEY:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
     try:
-        print(data)
-        asd = SensorsData.model_validate(data)
-        session.add(asd)
+        logger.debug(pformat(data))
+        for item in data:
+            asd = SensorsData.model_validate(item)
+            session.add(asd)
         session.commit()
 
     except Exception as e:
@@ -70,13 +76,24 @@ def add_data(data: SensorsData, session: Session = Depends(get_session), api_key
 
 
 @app.get("/sensors", response_model=List[SensorsData])
-def read_data(session: Session = Depends(get_session), api_key: str = Depends(header_scheme)):
+def read_data(session: Session = Depends(get_session),
+              api_key: str = Depends(header_scheme)):
+
     if api_key != X_API_KEY:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
-    data = session.exec(select(SensorsData).order_by(SensorsData.readtime.desc()).limit(10)) # pylint disable=no-member
+    data = session.exec(select(SensorsData).order_by(SensorsData.readtime.desc()).limit(MAX_ITEMS_TO_GET)) # pylint disable=no-member
     return data
+
+
+@app.get("/ping", status_code=status.HTTP_418_IM_A_TEAPOT)
+def ping(api_key: str = Depends(header_scheme)):
+    if api_key != X_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+    return {"message": "pong"}
 
 
 if __name__ == "__main__":
