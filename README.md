@@ -24,11 +24,11 @@ mpremote soft-reset
 sharing files from host to device, for easier development
 
 ```sh
-mpremote mount device/
+mpremote mount sensors/
 ```
 
 ```sh
-mpremote fs cp *.py :
+mpremote fs cp -v sensors/*.py :
 ```
 
 ## CO2
