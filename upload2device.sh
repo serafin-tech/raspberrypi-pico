@@ -1,6 +1,9 @@
 #!/bin/bash
 
 mpremote fs cp sensors_device/*.py :
-mpremote soft-reset
-minicom --device=/dev/ttyACM0
+sleep 2
+mpremote reset
+sleep 2
+mpremote connect port:/dev/ttyACM0
+#minicom --device=/dev/ttyACM0
 

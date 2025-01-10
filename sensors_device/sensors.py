@@ -3,7 +3,7 @@ import ds18x20
 import onewire
 import time
 
-from machine import I2C, Pin
+from machine import I2C, Pin, soft_reset
 
 import requests
 import scd4x
@@ -59,8 +59,21 @@ def setup_and_test_sensors():
     return scd, ds, ds1820_addr, dht_sensor, led
 
 
+def post_data(payload, sleep_time):
+    try:
+        r = requests.post(API_URL, headers=headers_post, json=payload, timeout=5)
+        print(f"POST status code: {r.status_code}")
+        r.close()
+        time.sleep(sleep_time)
+    except OSError as e:
+        print(f"POST failure: {str(e)}")
+
+
 def main():
-    wifi_init()
+    wlan = wifi_init()
+
+    if not wlan.isconnected():
+        soft_reset()
 
     r = requests.get(PING_URL, headers=headers_get)
     print(f"HTTP conn status code: {r.status_code}")
@@ -94,25 +107,29 @@ def main():
         dht_humidity = dht_sensor.humidity()
         dht_temp = dht_sensor.temperature()
 
-        data = [
-            {
+        led.off()
+
+        data1 = [{
                 "regname": "ow_temp",
                 "value": str(ow_temp),
-                "dt": "2025-01-09T11:22:33"
-            },
-            {
+                "dt": None
+            }]
+
+        data2 = [{
                 "regname": "dht_temp",
                 "value": str(dht_temp),
                 "dt": "2025-01-09T11:22:33"
             },
             {
-                "regname": "scd_temp",
-                "value": str(scd_temp),
-                "dt": "2025-01-09T11:22:33"
-            },
-            {
                 "regname": "dht_humidity",
                 "value": str(dht_humidity),
+                "dt": "2025-01-09T11:22:33"
+            }]
+
+        data3 = [
+            {
+                "regname": "scd_temp",
+                "value": str(scd_temp),
                 "dt": "2025-01-09T11:22:33"
             },
             {
@@ -127,18 +144,14 @@ def main():
             }
         ]
 
-        for i in data:
+        for i in data1 + data2 + data3:
             print(i)
-        try:
-            r = requests.post(API_URL, headers=headers_post, json=data, timeout=5)
-            print(f"POST status code: {r.status_code}")
-            r.close()
-        except OSError as e:
-            print(f"POST failure: {str(e)}")
 
-        led.off()
+        post_data(data3, 10)
+        post_data(data2, 10)
+        post_data(data1, 10)
 
-        time.sleep(20)
+        time.sleep(10)
 
 
 if __name__ == "__main__":

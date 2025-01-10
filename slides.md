@@ -4,6 +4,8 @@ marp: true
 ---
 # **Czujniki środowiskowe**
 
+## i inne problemy świata IoT o których wiecie ale boicie się zapytać
+
 Jaroslaw Wencel
 
 ---
@@ -12,7 +14,7 @@ Jaroslaw Wencel
 # Why
 
 1. Żeby wiedzieć czym oddycham w moim gabinecie,
-2. Potrzebuję przetestować proces gromadzenia danych z czujników,
+2. Potrzebuję przetestować proces gromadzenia danych z czujników, niestandartowych czujników, z niestandartową logiką...
 3. Dla zabawy - no a jak...
 
 ---
@@ -35,8 +37,8 @@ autor: Tomasz Zieliński, Informatyk Zakładowy.
 
 1. dane z czujnika SCD41 (temperatura, wilgotność, CO2), później doszły DS1820 i DHT22,
 2. oprogramowanie w Pythonie, zarówno część serwerowa jak i sprzętowa,
-3. komunikacja po http, żebym mógł tą zabawkę zabrać *w pole*
-4. zasilanie z kabla, dostęp do sieci po WiFi,
+3. komunikacja po HTTP, żebym mógł tą zabawkę zabrać *w pole*
+4. zasilanie z kabla (aczkolwiek niekoniecznie), dostęp do sieci po WiFi,
 5. obudowa - może kiedyś.
 
 ---
@@ -87,14 +89,24 @@ autor: Tomasz Zieliński, Informatyk Zakładowy.
 
 ## Software
 
-- MQTT zamiast HTTP - pewnie tak się to śkończy dla szerszego spektrum zastosowań,
+- MQTT zamiast HTTP - pewnie tak się to skończy dla szerszego spektrum zastosowań,
 - Influx zamiast SQLite, może Promoetheus, albo jakaś inna baza do czasowych serii danych,
 - jakaś wizualizacja
 - pewnie i tak na Home Assistansie się to skończy
 
+---
+<!-- paginate: true -->
+
+# Dlaczego nie *chińska chmura* i inne problemy pierwszego świata
+
+- niezależność - jak coś ma działać z dużym prawdopodobieństwem to eliminujemy *ruchome elementy*, zwłaszcza te nad którymi nie mamy kontroli...
+- czas życia sprzętu - historia mojej centrali alarmowej,
+- etyka / poziom wiedzy instalatorów
+    + casus jakości konfiguracji WiFi
+    + casus zachowywania dostępu do instalacji przez instalatorów - WTF?
+
 
 ---
-
 <!-- paginate: true -->
 
 # Wnioski
@@ -105,3 +117,9 @@ autor: Tomasz Zieliński, Informatyk Zakładowy.
 - ORMy zaskakują, niby to wiedziałem, ale...
 - Copilot mi coś nawet podpowiadał jak edytowałem kod MicroPythona...
 - zrobić lepsze logi to API
+- Codium jest fajne, bo nie od M$, ale VSCode ma lepsze rozszerzenia
+
+---
+<!-- paginate: true -->
+
+źródła: https://github.com/serafin-tech/raspberrypi-pico
