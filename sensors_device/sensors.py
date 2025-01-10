@@ -61,10 +61,12 @@ def setup_and_test_sensors():
 
 def post_data(payload, sleep_time):
     try:
-        r = requests.post(API_URL, headers=headers_post, json=payload, timeout=5)
+        r = requests.post(API_URL, headers=headers_post, json=payload, timeout=10)
         print(f"POST status code: {r.status_code}")
+        print(f"POST response: {r.json()}")
+        time.sleep(int(sleep_time/2))
         r.close()
-        time.sleep(sleep_time)
+        time.sleep(int(sleep_time/2))
     except OSError as e:
         print(f"POST failure: {str(e)}")
 
@@ -118,40 +120,38 @@ def main():
         data2 = [{
                 "regname": "dht_temp",
                 "value": str(dht_temp),
-                "dt": "2025-01-09T11:22:33"
+                "dt": None
             },
             {
                 "regname": "dht_humidity",
                 "value": str(dht_humidity),
-                "dt": "2025-01-09T11:22:33"
+                "dt": None
             }]
 
-        data3 = [
-            {
+        data3 = [{
                 "regname": "scd_temp",
                 "value": str(scd_temp),
-                "dt": "2025-01-09T11:22:33"
+                "dt": None
             },
             {
                 "regname": "scd_humidity",
                 "value": str(scd_humidity),
-                "dt": "2025-01-09T11:22:33"
+                "dt": None
             },
             {
                 "regname": "scd_co2_ppm_level",
                 "value": str(scd_co2_ppm_level),
-                "dt": "2025-01-09T11:22:33"
-            }
-        ]
+                "dt": None
+            }]
 
         for i in data1 + data2 + data3:
             print(i)
 
-        post_data(data3, 10)
-        post_data(data2, 10)
-        post_data(data1, 10)
+        post_data(data3, 20)
+        post_data(data2, 20)
+        post_data(data1, 20)
 
-        time.sleep(10)
+        time.sleep(30)
 
 
 if __name__ == "__main__":

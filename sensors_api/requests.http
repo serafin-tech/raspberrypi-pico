@@ -1,0 +1,14 @@
+POST http://127.0.0.1:8000/sensors HTTP/1.1
+accept: application/json
+Content-Type: application/json
+X-API-Key: test
+
+[{
+    "regname": "param1",
+    "value": "string_val1",
+    "dt": null
+},{
+    "regname": "param2",
+    "value": "string_val2",
+    "dt": null
+}]
