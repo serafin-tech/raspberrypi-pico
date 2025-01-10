@@ -5,7 +5,7 @@ import time
 
 from machine import I2C, Pin, soft_reset
 
-import requests
+import requests_fix as requests
 import scd4x
 
 from secrets import API_KEY
@@ -14,6 +14,8 @@ from wifi import wifi_init
 
 API_URL = 'http://192.168.5.100:8000/sensors'
 PING_URL = 'http://192.168.5.100:8000/ping'
+
+EMPTY_SATUS_CODE = 0
 
 headers_get = {
     'X-API-Key': API_KEY
@@ -59,16 +61,16 @@ def setup_and_test_sensors():
     return scd, ds, ds1820_addr, dht_sensor, led
 
 
-def post_data(payload, sleep_time):
+def post_data(payload, timeout=5):
     try:
-        r = requests.post(API_URL, headers=headers_post, json=payload, timeout=10)
+        r = requests.post(API_URL, headers=headers_post, json=payload, timeout=timeout)
         print(f"POST status code: {r.status_code}")
         print(f"POST response: {r.json()}")
-        time.sleep(int(sleep_time/2))
         r.close()
-        time.sleep(int(sleep_time/2))
+        return r.status_code
     except OSError as e:
         print(f"POST failure: {str(e)}")
+        return EMPTY_SATUS_CODE
 
 
 def main():
@@ -144,14 +146,15 @@ def main():
                 "dt": None
             }]
 
-        for i in data1 + data2 + data3:
-            print(i)
+        print(data3)
 
-        post_data(data3, 20)
-        post_data(data2, 20)
-        post_data(data1, 20)
+        post_data(data3)
+        time.sleep(10)
+        post_data(data2)
+        time.sleep(10)
+        post_data(data1)
 
-        time.sleep(30)
+        time.sleep(45)
 
 
 if __name__ == "__main__":
